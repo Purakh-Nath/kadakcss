@@ -174,12 +174,12 @@ KadakCSS.destroy();
 HTML class="kc-bg-chai kc-p-20"
          │
          ▼
-   engine.js — scan(document)
+   engine.js - scan(document)
          │  
          ├── for each element with kc-* classes
          │         │
          │         ▼
-         │   parser.js — parseClass("kc-bg-chai")
+         │   parser.js - parseClass("kc-bg-chai")
          │         │
          │         ├── static lookup in utilities.js -> { backgroundColor: '#c69c6d' }
          │         ├── dynamic regex -> kc-p-20 → { padding: '20px' }
@@ -210,4 +210,4 @@ KadakCSS demystifies that by showing the exact same concepts implemented in ~300
 
 ## License
 
-MIT — use it, fork it, learn from it.
+MIT - use it, fork it, learn from it.
