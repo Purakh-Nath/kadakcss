@@ -1,0 +1,1278 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KadakCSS — Utility-First CSS Engine</title>
+
+  <!-- Only base resets, everything else comes from KadakCSS classes -->
+  <style>
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background: #0e0b08;
+      font-family: 'Segoe UI', system-ui, sans-serif;
+      color: #faf3e0;
+      min-height: 100vh;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.5;
+    }
+
+    .demo-card {
+      transition: transform 0.25s ease, box-shadow 0.25s ease;
+    }
+
+    .demo-card:hover {
+      transform: translateY(-3px);
+    }
+
+    code {
+      background: rgba(198, 156, 109, 0.12);
+      border: 1px solid rgba(198, 156, 109, 0.25);
+      border-radius: 5px;
+      padding: 2px 7px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.82em;
+      color: #d4a373;
+    }
+
+    #playground-input {
+      background: #1a1410;
+      border: 1px solid #3a2d1e;
+      border-radius: 8px;
+      color: #faf3e0;
+      font-family: 'Courier New', monospace;
+      font-size: 13px;
+      width: 100%;
+      padding: 14px;
+      resize: vertical;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    #playground-input:focus {
+      border-color: #c69c6d;
+    }
+
+    ::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: #0e0b08;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: #6f4e37;
+      border-radius: 3px;
+    }
+
+    @keyframes pulse-chai {
+
+      0%,
+      100% {
+        box-shadow: 0 0 0 0 rgba(198, 156, 109, 0.4);
+      }
+
+      50% {
+        box-shadow: 0 0 0 8px rgba(198, 156, 109, 0);
+      }
+    }
+
+    .pulse {
+      animation: pulse-chai 2s infinite;
+    }
+
+    .divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #6f4e37 40%, #c69c6d 50%, #6f4e37 60%, transparent);
+      margin: 60px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <header
+    style="background:linear-gradient(160deg,#1a1008 0%,#2d1a0e 50%,#0e0b08 100%); border-bottom:1px solid #3a2d1e;">
+    <div style="max-width:960px;margin:0 auto;padding:0 24px;">
+
+      <!-- Nav -->
+      <nav class="kc-flex kc-items-center kc-justify-between kc-py-20">
+        <div class="kc-flex kc-items-center kc-gap-12">
+          <div class="kc-bg-chai kc-rounded-10 kc-p-8 pulse"
+            style="width:38px;height:38px;display:flex;align-items:center;justify-content:center;">
+            <span style="font-size:18px;">☕</span>
+          </div>
+          <span class="kc-text-chai kc-font-bold kc-text-18 kc-tracking-wide">KadakCSS</span>
+        </div>
+        <div class="kc-flex kc-items-center kc-gap-24">
+          <a href="#docs" class="kc-text-14 kc-text-doodh kc-opacity-75 kc-no-underline kc-cursor-pointer kc-transition"
+            style="text-decoration:none;" onmouseenter="this.style.opacity=1"
+            onmouseleave="this.style.opacity=0.75">Docs</a>
+          <a href="#playground"
+            class="kc-text-14 kc-text-doodh kc-opacity-75 kc-no-underline kc-cursor-pointer kc-transition"
+            style="text-decoration:none;" onmouseenter="this.style.opacity=1"
+            onmouseleave="this.style.opacity=0.75">Playground</a>
+          <span
+            class="kc-bg-kadak kc-text-chai kc-text-12 kc-font-semibold kc-px-10 kc-py-4 kc-rounded-full kc-tracking-wider kc-uppercase">
+            v1.0.0
+          </span>
+        </div>
+      </nav>
+
+      <!-- Hero -->
+      <div class="kc-text-center" style="padding:80px 0 90px;">
+        <div class="kc-text-elaichi kc-text-13 kc-uppercase kc-tracking-wider kc-font-semibold kc-mb-16">
+          Pure JavaScript · Zero Build Tools · Zero Dependencies
+        </div>
+        <h1
+          style="font-size:clamp(42px,7vw,80px);font-weight:900;line-height:1.05;letter-spacing:-0.03em;margin-bottom:24px;">
+          <span class="kc-text-doodh">Utility-first CSS,</span><br />
+          <span class="kc-text-chai">brewed from scratch.</span>
+        </h1>
+        <p class="kc-text-18 kc-text-doodh kc-opacity-75 kc-leading-loose" style="max-width:520px;margin:0 auto 40px;">
+          KadakCSS scans your DOM, reads <code>kc-*</code> class names,
+          and applies styles dynamically — no PostCSS, no bundler, no magic.
+          Just JavaScript the way it was meant to be.
+        </p>
+        <div class="kc-flex kc-justify-center kc-gap-16 kc-flex-wrap">
+          <button onclick="document.getElementById('playground').scrollIntoView({behavior:'smooth'})"
+            class="kc-bg-chai kc-text-kadak kc-font-bold kc-text-16 kc-px-32 kc-py-14 kc-rounded-10 kc-cursor-pointer kc-transition"
+            style="border:none;letter-spacing:0.01em;" onmouseenter="this.style.backgroundColor='#d4a373'"
+            onmouseleave="this.style.backgroundColor='#c69c6d'">
+            Try Playground →
+          </button>
+          <button onclick="document.getElementById('docs').scrollIntoView({behavior:'smooth'})"
+            class="kc-text-chai kc-font-semibold kc-text-16 kc-px-32 kc-py-14 kc-rounded-10 kc-cursor-pointer kc-transition"
+            style="border:2px solid #6f4e37;background:transparent;letter-spacing:0.01em;"
+            onmouseenter="this.style.borderColor='#c69c6d'" onmouseleave="this.style.borderColor='#6f4e37'">
+            Read the Docs
+          </button>
+        </div>
+
+        <!-- Install snippet -->
+        <div class="kc-mt-48" style="max-width:460px;margin:48px auto 0;">
+          <div
+            style="background:#1a1410;border:1px solid #3a2d1e;border-radius:10px;padding:14px 20px;text-align:left;display:flex;align-items:center;justify-content:space-between;">
+            <span style="font-family:'Courier New',monospace;font-size:13px;color:#c69c6d;">
+              &lt;script src="<span style="color:#d4a373;">kadakcss.js</span>"&gt;&lt;/script&gt;
+            </span>
+            <button id="copy-btn" onclick="copySnippet()"
+              style="background:none;border:none;cursor:pointer;color:#6b7280;font-size:12px;padding:4px 8px;border-radius:4px;transition:all 0.15s;"
+              onmouseenter="this.style.color='#c69c6d'" onmouseleave="this.style.color='#6b7280'">
+              Copy
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+  <section style="max-width:960px;margin:0 auto;padding:80px 24px;">
+
+    <div class="kc-text-center kc-mb-60">
+      <div class="kc-text-elaichi kc-text-13 kc-uppercase kc-tracking-wider kc-mb-12">Built with KadakCSS classes only
+      </div>
+      <h2 class="kc-text-doodh kc-font-bold" style="font-size:36px;">Components in action</h2>
+    </div>
+
+    <div class="kc-grid kc-cols-3 kc-gap-24 kc-mb-24">
+
+      <div class="demo-card kc-bg-kadak kc-p-28 kc-rounded-16 kc-shadow-chai"
+        style="border:1px solid rgba(198,156,109,0.2);">
+        <div class="kc-text-36 kc-mb-16">🍵</div>
+        <h3 class="kc-text-chai kc-font-bold kc-text-18 kc-mb-8">Theme Colors</h3>
+        <p class="kc-text-doodh kc-text-14 kc-opacity-75 kc-leading-normal">
+          Named colors from your theme — <code>kc-bg-chai</code>, <code>kc-text-kadak</code>.
+        </p>
+        <div class="kc-flex kc-gap-8 kc-mt-16 kc-flex-wrap">
+          <span class="kc-bg-chai   kc-rounded-full" style="width:20px;height:20px;display:inline-block;"></span>
+          <span class="kc-bg-kadak  kc-rounded-full"
+            style="width:20px;height:20px;display:inline-block;border:2px solid #c69c6d"></span>
+          <span class="kc-bg-elaichi kc-rounded-full" style="width:20px;height:20px;display:inline-block;"></span>
+          <span class="kc-bg-kesar  kc-rounded-full" style="width:20px;height:20px;display:inline-block;"></span>
+          <span class="kc-bg-tulsi  kc-rounded-full" style="width:20px;height:20px;display:inline-block;"></span>
+          <span class="kc-bg-neel   kc-rounded-full" style="width:20px;height:20px;display:inline-block;"></span>
+        </div>
+      </div>
+
+      <div class="demo-card kc-p-28 kc-rounded-16 kc-shadow-lg"
+        style="background:linear-gradient(135deg,#1a1410 0%,#2d1a0e 100%);border:1px solid rgba(198,156,109,0.15);">
+        <div class="kc-text-36 kc-mb-16">📐</div>
+        <h3 class="kc-text-elaichi kc-font-bold kc-text-18 kc-mb-8">Spacing System</h3>
+        <p class="kc-text-doodh kc-text-14 kc-opacity-75 kc-leading-normal">
+          Any pixel value. <code>kc-p-20</code> · <code>kc-m-8</code> · <code>kc-px-16</code>.
+        </p>
+        <div class="kc-mt-16">
+          <div class="kc-bg-chai kc-p-4 kc-rounded-4 kc-mb-6" style="opacity:0.3;">
+            <div class="kc-bg-chai kc-p-6 kc-rounded-4 kc-mb-6" style="opacity:0.5;">
+              <div class="kc-bg-chai kc-p-10 kc-rounded-6" style="opacity:0.8;"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="demo-card kc-p-28 kc-rounded-16 kc-shadow-lg"
+        style="background:#111827;border:1px solid rgba(198,156,109,0.1);">
+        <div class="kc-text-36 kc-mb-16">🎯</div>
+        <h3 class="kc-text-info kc-font-bold kc-text-18 kc-mb-8">Border Radius</h3>
+        <p class="kc-text-doodh kc-text-14 kc-opacity-75 kc-leading-normal">
+          Any value. <code>kc-rounded-8</code> to <code>kc-rounded-full</code>.
+        </p>
+        <div class="kc-flex kc-gap-10 kc-mt-16 kc-items-center">
+          <div class="kc-bg-info kc-rounded-4" style="width:36px;height:36px;opacity:0.8;"></div>
+          <div class="kc-bg-info kc-rounded-10" style="width:36px;height:36px;opacity:0.8;"></div>
+          <div class="kc-bg-info kc-rounded-18" style="width:36px;height:36px;opacity:0.8;"></div>
+          <div class="kc-bg-info kc-rounded-full" style="width:36px;height:36px;opacity:0.8;"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="kc-grid kc-cols-2 kc-gap-24 kc-mb-24">
+
+      <div class="demo-card kc-p-32 kc-rounded-16" style="background:#1a1410;border:1px solid #3a2d1e;">
+        <h3 class="kc-text-doodh kc-font-bold kc-text-18 kc-mb-8">Hover Variants</h3>
+        <p class="kc-text-14 kc-text-doodh kc-opacity-60 kc-mb-24">
+          Mouse over the buttons below
+        </p>
+
+        <div class="kc-flex kc-gap-12 kc-flex-wrap">
+          <button class="kc-bg-kadak kc-text-chai kc-font-semibold kc-text-14
+                        kc-px-20 kc-py-10 kc-rounded-8 kc-cursor-pointer kc-transition
+                        kc-hover:bg-chai kc-hover:text-kadak" style="border:none;">
+            Hover me 🔥
+          </button>
+          <button class="kc-text-chai kc-font-semibold kc-text-14
+                        kc-px-20 kc-py-10 kc-rounded-8 kc-cursor-pointer kc-transition
+                        kc-hover:bg-kesar kc-hover:text-white"
+            style="border:2px solid #c69c6d;background:transparent;">
+            Or me ☕
+          </button>
+          <button class="kc-bg-neel kc-text-doodh kc-font-semibold kc-text-14
+                        kc-px-20 kc-py-10 kc-rounded-8 kc-cursor-pointer kc-transition
+                        kc-hover:bg-info kc-hover:text-white" style="border:none;">
+            Or me 💡
+          </button>
+        </div>
+
+        <p class="kc-text-12 kc-text-elaichi kc-mt-20 kc-opacity-75">
+          <code>kc-hover:bg-chai</code> &nbsp;·&nbsp; <code>kc-hover:text-kadak</code>
+        </p>
+      </div>
+
+      <div class="demo-card kc-p-32 kc-rounded-16" style="background:#1a1410;border:1px solid #3a2d1e;">
+        <h3 class="kc-text-doodh kc-font-bold kc-text-18 kc-mb-24">Typography</h3>
+        <p class="kc-text-chai kc-font-black kc-text-36 kc-leading-tight kc-tracking-tight">Bold.</p>
+        <p class="kc-text-elaichi kc-font-semibold kc-text-22 kc-leading-tight kc-tracking-normal">Semi-bold headline.
+        </p>
+        <p class="kc-text-doodh kc-font-normal kc-text-15 kc-leading-loose kc-opacity-75 kc-mt-8">
+          Normal weight body copy with <code>kc-leading-loose</code> for comfortable reading.
+        </p>
+        <p class="kc-text-gray kc-font-light kc-text-13 kc-italic kc-mt-8 kc-tracking-wide kc-uppercase">
+          Light italic caption · spaced wide
+        </p>
+      </div>
+    </div>
+
+    <div class="demo-card kc-p-32 kc-rounded-16 kc-mb-24"
+      style="background:linear-gradient(100deg,#0f1a12 0%,#111827 100%);border:1px solid rgba(74,124,89,0.3);">
+      <div class="kc-flex kc-items-center kc-justify-between kc-flex-wrap kc-gap-16">
+        <div>
+          <div class="kc-flex kc-items-center kc-gap-12 kc-mb-8">
+            <span class="kc-bg-success kc-rounded-full kc-text-white kc-text-12 kc-font-bold kc-px-10 kc-py-4">
+              ✓ SUCCESS
+            </span>
+            <span class="kc-bg-warning kc-rounded-full kc-text-black kc-text-12 kc-font-bold kc-px-10 kc-py-4">
+              ⚠ WARNING
+            </span>
+            <span class="kc-bg-danger kc-rounded-full kc-text-white kc-text-12 kc-font-bold kc-px-10 kc-py-4">
+              ✕ DANGER
+            </span>
+            <span class="kc-bg-info kc-rounded-full kc-text-white kc-text-12 kc-font-bold kc-px-10 kc-py-4">
+              ℹ INFO
+            </span>
+          </div>
+          <p class="kc-text-doodh kc-text-14 kc-opacity-75">
+            Semantic color utilities built into the theme —
+            <code>kc-bg-success</code>, <code>kc-bg-danger</code>, etc.
+          </p>
+        </div>
+        <div class="kc-text-success kc-text-48" style="line-height:1;">🌿</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="docs" style="max-width:960px;margin:0 auto;padding:0 24px 80px;">
+
+    <div class="kc-text-center kc-mb-60">
+      <div class="kc-text-elaichi kc-text-13 kc-uppercase kc-tracking-wider kc-mb-12">Reference</div>
+      <h2 class="kc-text-doodh kc-font-bold" style="font-size:36px;">Utility Cheatsheet</h2>
+    </div>
+
+    <div class="kc-grid kc-cols-2 kc-gap-24">
+
+      <div style="background:#1a1410;border:1px solid #3a2d1e;border-radius:14px;padding:28px;">
+        <h4 class="kc-text-chai kc-font-semibold kc-text-16 kc-mb-20 kc-uppercase kc-tracking-wide">Spacing</h4>
+        <div class="kc-grid kc-cols-2 kc-gap-10" style="font-size:13px;">
+          <div><code>kc-p-{n}</code></div>
+          <div class="kc-text-doodh kc-opacity-60">padding: npx</div>
+          <div><code>kc-m-{n}</code></div>
+          <div class="kc-text-doodh kc-opacity-60">margin: npx</div>
+          <div><code>kc-px-{n}</code></div>
+          <div class="kc-text-doodh kc-opacity-60">padding X axis</div>
+          <div><code>kc-py-{n}</code></div>
+          <div class="kc-text-doodh kc-opacity-60">padding Y axis</div>
+          <div><code>kc-gap-{n}</code></div>
+          <div class="kc-text-doodh kc-opacity-60">flex/grid gap</div>
+        </div>
+      </div>
+
+      <div style="background:#1a1410;border:1px solid #3a2d1e;border-radius:14px;padding:28px;">
+        <h4 class="kc-text-elaichi kc-font-semibold kc-text-16 kc-mb-20 kc-uppercase kc-tracking-wide">Colors</h4>
+        <div class="kc-grid kc-cols-2 kc-gap-10" style="font-size:13px;">
+          <div><code>kc-bg-{name}</code></div>
+          <div class="kc-text-doodh kc-opacity-60">background-color</div>
+          <div><code>kc-text-{name}</code></div>
+          <div class="kc-text-doodh kc-opacity-60">color</div>
+          <div><code>kc-border-{name}</code></div>
+          <div class="kc-text-doodh kc-opacity-60">border-color</div>
+          <div><code>kc-opacity-{n}</code></div>
+          <div class="kc-text-doodh kc-opacity-60">opacity 0–100</div>
+        </div>
+      </div>
+
+      <div style="background:#1a1410;border:1px solid #3a2d1e;border-radius:14px;padding:28px;">
+        <h4 class="kc-text-info kc-font-semibold kc-text-16 kc-mb-20 kc-uppercase kc-tracking-wide">Layout</h4>
+        <div class="kc-grid kc-cols-2 kc-gap-10" style="font-size:13px;">
+          <div><code>kc-flex</code></div>
+          <div class="kc-text-doodh kc-opacity-60">display: flex</div>
+          <div><code>kc-grid</code></div>
+          <div class="kc-text-doodh kc-opacity-60">display: grid</div>
+          <div><code>kc-cols-{n}</code></div>
+          <div class="kc-text-doodh kc-opacity-60">grid columns</div>
+          <div><code>kc-items-center</code></div>
+          <div class="kc-text-doodh kc-opacity-60">align-items</div>
+          <div><code>kc-justify-between</code></div>
+          <div class="kc-text-doodh kc-opacity-60">justify-content</div>
+        </div>
+      </div>
+
+      <div style="background:#1a1410;border:1px solid #3a2d1e;border-radius:14px;padding:28px;">
+        <h4 class="kc-text-kesar kc-font-semibold kc-text-16 kc-mb-20 kc-uppercase kc-tracking-wide">Variants</h4>
+        <div class="kc-grid kc-cols-2 kc-gap-10" style="font-size:13px;">
+          <div><code>kc-hover:bg-chai</code></div>
+          <div class="kc-text-doodh kc-opacity-60">on hover</div>
+          <div><code>kc-md:p-20</code></div>
+          <div class="kc-text-doodh kc-opacity-60">≥768px</div>
+          <div><code>kc-lg:text-24</code></div>
+          <div class="kc-text-doodh kc-opacity-60">≥1024px</div>
+          <div><code>kc-sm:hidden</code></div>
+          <div class="kc-text-doodh kc-opacity-60">≥480px</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- API -->
+    <div class="kc-mt-40 kc-p-32 kc-rounded-16" style="background:#1a1410;border:1px solid #3a2d1e;">
+      <h4 class="kc-text-chai kc-font-semibold kc-text-18 kc-mb-24">JavaScript API</h4>
+      <div style="font-family:'Courier New',monospace;font-size:13px;line-height:2;color:#d4a373;">
+        <div><span style="color:#6b7280;">// Add a custom color at runtime</span></div>
+        <div>KadakCSS.<span style="color:#c69c6d;">addColor</span>(<span style="color:#4a7c59;">'mango'</span>, <span
+            style="color:#4a7c59;">'#ffb347'</span>);</div>
+        <br />
+        <div><span style="color:#6b7280;">// Add a custom utility class</span></div>
+        <div>KadakCSS.<span style="color:#c69c6d;">addUtility</span>(<span style="color:#4a7c59;">'kc-card'</span>, {
+        </div>
+        <div>&nbsp;&nbsp;padding: <span style="color:#4a7c59;">'24px'</span>,</div>
+        <div>&nbsp;&nbsp;borderRadius: <span style="color:#4a7c59;">'12px'</span>,</div>
+        <div>});</div>
+        <br />
+        <div><span style="color:#6b7280;">// Re-scan after programmatic DOM changes</span></div>
+        <div>KadakCSS.<span style="color:#c69c6d;">refresh</span>();</div>
+        <br />
+        <div><span style="color:#6b7280;">// Enable debug warnings</span></div>
+        <div>KadakCSS.<span style="color:#c69c6d;">debug</span> = <span style="color:#3b82f6;">true</span>;</div>
+      </div>
+    </div>
+  </section>
+
+  <div class="divider"></div>
+
+  <section id="playground" style="max-width:960px;margin:0 auto;padding:0 24px 100px;">
+
+    <div class="kc-text-center kc-mb-50">
+      <div class="kc-text-elaichi kc-text-13 kc-uppercase kc-tracking-wider kc-mb-12">Interactive</div>
+      <h2 class="kc-text-doodh kc-font-bold" style="font-size:36px;">Live Playground</h2>
+      <p class="kc-text-14 kc-text-doodh kc-opacity-60 kc-mt-12">
+        Type <code>kc-*</code> classes below. Preview updates live. No build step.
+      </p>
+    </div>
+
+    <div class="kc-grid kc-cols-2 kc-gap-32" style="align-items:start;">
+
+      <div>
+        <label class="kc-block kc-text-chai kc-font-semibold kc-text-14 kc-mb-10 kc-uppercase kc-tracking-wide">
+          Classes (space-separated)
+        </label>
+        <textarea id="playground-input" rows="4"
+          placeholder="kc-bg-chai kc-text-white kc-p-20 kc-rounded-12 kc-text-18 kc-font-bold">kc-bg-chai kc-text-white kc-p-24 kc-rounded-14 kc-text-20 kc-font-bold kc-text-center kc-shadow-chai</textarea>
+
+        <label
+          class="kc-block kc-text-chai kc-font-semibold kc-text-14 kc-mb-10 kc-mt-24 kc-uppercase kc-tracking-wide">
+          Inner text
+        </label>
+        <input id="playground-text" value="KadakCSS ☕ is brewing."
+          style="background:#1a1410;border:1px solid #3a2d1e;border-radius:8px;color:#faf3e0;font-size:14px;width:100%;padding:12px 14px;outline:none;transition:border-color 0.2s;"
+          onfocus="this.style.borderColor='#c69c6d'" onblur="this.style.borderColor='#3a2d1e'" />
+
+        <div class="kc-mt-20">
+          <div class="kc-text-12 kc-text-doodh kc-opacity-50 kc-mb-10 kc-uppercase kc-tracking-wide">Quick add</div>
+          <div id="chips" class="kc-flex kc-flex-wrap kc-gap-8"></div>
+        </div>
+      </div>
+
+      <div>
+        <div class="kc-text-chai kc-font-semibold kc-text-14 kc-mb-10 kc-uppercase kc-tracking-wide">
+          Preview
+        </div>
+        <div
+          style="background:#111;border:1px solid #3a2d1e;border-radius:12px;padding:40px;min-height:180px;display:flex;align-items:center;justify-content:center;">
+          <div id="preview-el">KadakCSS ☕ is brewing.</div>
+        </div>
+        <div class="kc-mt-16 kc-p-16 kc-rounded-10" style="background:#0e0b08;border:1px solid #2a1e12;">
+          <div class="kc-text-12 kc-text-doodh kc-opacity-40 kc-mb-8">Applied inline styles</div>
+          <pre id="style-output"
+            style="font-size:11px;color:#6b7280;font-family:'Courier New',monospace;white-space:pre-wrap;word-break:break-all;"></pre>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer style="border-top:1px solid #3a2d1e;padding:40px 24px;text-align:center;">
+    <div class="kc-flex kc-items-center kc-justify-center kc-gap-12 kc-mb-16">
+      <span class="kc-text-chai kc-text-24">☕</span>
+      <span class="kc-text-doodh kc-font-semibold kc-text-18">KadakCSS</span>
+    </div>
+    <p class="kc-text-13 kc-text-doodh kc-opacity-40">
+      Built with 🔥 to teach how utility-first CSS works internally.
+      Pure JavaScript. No dependencies. Made with chai.
+    </p>
+  </footer>
+
+  <script>
+      (function(g) {
+          "use strict";
+          const theme = {
+              colors: {
+                  chai: "#c69c6d",
+                  kadak: "#6f4e37",
+                  elaichi: "#d4a373",
+                  tulsi: "#4a7c59",
+                  kesar: "#e07a5f",
+                  neel: "#3d405b",
+                  doodh: "#faf3e0",
+                  koyla: "#1a1a2e",
+                  white: "#ffffff",
+                  black: "#000000",
+                  gray: "#6b7280",
+                  "gray-100": "#f3f4f6",
+                  "gray-200": "#e5e7eb",
+                  "gray-800": "#1f2937",
+                  "gray-900": "#111827",
+                  success: "#22c55e",
+                  warning: "#f59e0b",
+                  danger: "#ef4444",
+                  info: "#3b82f6"
+              },
+              shadows: {
+                  sm: "0 1px 3px rgba(0,0,0,0.12)",
+                  md: "0 4px 12px rgba(0,0,0,0.15)",
+                  lg: "0 10px 30px rgba(0,0,0,0.20)",
+                  xl: "0 20px 60px rgba(0,0,0,0.25)",
+                  chai: "0 8px 24px rgba(198,156,109,0.40)"
+              },
+              fonts: {
+                  sans: "'Segoe UI',system-ui,sans-serif",
+                  serif: "Georgia,'Times New Roman',serif",
+                  mono: "'Courier New',monospace"
+              },
+              leading: {
+                  tight: "1.2",
+                  normal: "1.5",
+                  loose: "1.8"
+              },
+              tracking: {
+                  tight: "-0.02em",
+                  normal: "0em",
+                  wide: "0.08em",
+                  wider: "0.16em"
+              },
+              opacity: {
+                  0: "0",
+                  25: "0.25",
+                  50: "0.5",
+                  75: "0.75",
+                  100: "1"
+              }
+          };
+          const su = {};
+          ["block", "inline", "inline-block", "flex", "inline-flex", "grid", "hidden"].forEach((v, i) => {
+              const d = ["block", "inline", "inline-block", "flex", "inline-flex", "grid", "none"][i];
+              su["kc-" + v] = {
+                  display: d
+              };
+          });
+          const moreStatics = {
+              "kc-flex-row": {
+                  flexDirection: "row"
+              },
+              "kc-flex-col": {
+                  flexDirection: "column"
+              },
+              "kc-flex-wrap": {
+                  flexWrap: "wrap"
+              },
+              "kc-flex-1": {
+                  flex: "1 1 0%"
+              },
+              "kc-flex-none": {
+                  flex: "none"
+              },
+              "kc-items-start": {
+                  alignItems: "flex-start"
+              },
+              "kc-items-center": {
+                  alignItems: "center"
+              },
+              "kc-items-end": {
+                  alignItems: "flex-end"
+              },
+              "kc-items-stretch": {
+                  alignItems: "stretch"
+              },
+              "kc-justify-start": {
+                  justifyContent: "flex-start"
+              },
+              "kc-justify-center": {
+                  justifyContent: "center"
+              },
+              "kc-justify-end": {
+                  justifyContent: "flex-end"
+              },
+              "kc-justify-between": {
+                  justifyContent: "space-between"
+              },
+              "kc-justify-around": {
+                  justifyContent: "space-around"
+              },
+              "kc-justify-evenly": {
+                  justifyContent: "space-evenly"
+              },
+              "kc-text-left": {
+                  textAlign: "left"
+              },
+              "kc-text-center": {
+                  textAlign: "center"
+              },
+              "kc-text-right": {
+                  textAlign: "right"
+              },
+              "kc-text-justify": {
+                  textAlign: "justify"
+              },
+              "kc-font-thin": {
+                  fontWeight: "100"
+              },
+              "kc-font-light": {
+                  fontWeight: "300"
+              },
+              "kc-font-normal": {
+                  fontWeight: "400"
+              },
+              "kc-font-medium": {
+                  fontWeight: "500"
+              },
+              "kc-font-semibold": {
+                  fontWeight: "600"
+              },
+              "kc-font-bold": {
+                  fontWeight: "700"
+              },
+              "kc-font-extrabold": {
+                  fontWeight: "800"
+              },
+              "kc-font-black": {
+                  fontWeight: "900"
+              },
+              "kc-italic": {
+                  fontStyle: "italic"
+              },
+              "kc-underline": {
+                  textDecoration: "underline"
+              },
+              "kc-line-through": {
+                  textDecoration: "line-through"
+              },
+              "kc-no-underline": {
+                  textDecoration: "none"
+              },
+              "kc-uppercase": {
+                  textTransform: "uppercase"
+              },
+              "kc-lowercase": {
+                  textTransform: "lowercase"
+              },
+              "kc-capitalize": {
+                  textTransform: "capitalize"
+              },
+              "kc-static": {
+                  position: "static"
+              },
+              "kc-relative": {
+                  position: "relative"
+              },
+              "kc-absolute": {
+                  position: "absolute"
+              },
+              "kc-fixed": {
+                  position: "fixed"
+              },
+              "kc-sticky": {
+                  position: "sticky",
+                  top: "0"
+              },
+              "kc-overflow-hidden": {
+                  overflow: "hidden"
+              },
+              "kc-overflow-auto": {
+                  overflow: "auto"
+              },
+              "kc-overflow-scroll": {
+                  overflow: "scroll"
+              },
+              "kc-cursor-pointer": {
+                  cursor: "pointer"
+              },
+              "kc-cursor-default": {
+                  cursor: "default"
+              },
+              "kc-cursor-not-allowed": {
+                  cursor: "not-allowed"
+              },
+              "kc-border-solid": {
+                  borderStyle: "solid"
+              },
+              "kc-border-dashed": {
+                  borderStyle: "dashed"
+              },
+              "kc-border-dotted": {
+                  borderStyle: "dotted"
+              },
+              "kc-border-none": {
+                  borderStyle: "none"
+              },
+              "kc-w-full": {
+                  width: "100%"
+              },
+              "kc-w-screen": {
+                  width: "100vw"
+              },
+              "kc-w-auto": {
+                  width: "auto"
+              },
+              "kc-h-full": {
+                  height: "100%"
+              },
+              "kc-h-screen": {
+                  height: "100vh"
+              },
+              "kc-h-auto": {
+                  height: "auto"
+              },
+              "kc-box-border": {
+                  boxSizing: "border-box"
+              },
+              "kc-pointer-none": {
+                  pointerEvents: "none"
+              },
+              "kc-select-none": {
+                  userSelect: "none"
+              },
+              "kc-select-all": {
+                  userSelect: "all"
+              },
+              "kc-visible": {
+                  visibility: "visible"
+              },
+              "kc-invisible": {
+                  visibility: "hidden"
+              },
+              "kc-transition": {
+                  transition: "all 0.2s ease"
+              },
+              "kc-transition-slow": {
+                  transition: "all 0.4s ease"
+              },
+              "kc-transition-fast": {
+                  transition: "all 0.1s ease"
+              },
+              "kc-list-none": {
+                  listStyle: "none"
+              }
+          };
+          Object.assign(su, moreStatics);
+
+          function parseClass(cls, th, st) {
+              if (!cls.startsWith("kc-")) return null;
+              const rm = cls.match(/^kc-(sm|md|lg|xl):(.*)/);
+              if (rm) {
+                  const bps = {
+                      sm: "480px",
+                      md: "768px",
+                      lg: "1024px",
+                      xl: "1280px"
+                  };
+                  const inner = parseClass("kc-" + rm[2], th, st);
+                  if (!inner) return null;
+                  return {
+                      responsive: {
+                          breakpoint: bps[rm[1]],
+                          styles: inner.styles
+                      }
+                  };
+              }
+              const hm = cls.match(/^kc-hover:(.*)/);
+              if (hm) {
+                  const inner = parseClass("kc-" + hm[1], th, st);
+                  if (!inner) return null;
+                  return {
+                      hover: inner.styles
+                  };
+              }
+              if (st[cls]) return {
+                  styles: st[cls]
+              };
+              const body = cls.slice(3);
+              const fd = body.indexOf("-");
+              if (fd === -1) return null;
+              const pre = body.slice(0, fd);
+              const suf = body.slice(fd + 1);
+              const nv = parseFloat(suf);
+              const isn = !isNaN(nv) && suf.trim() !== "";
+              const px = v => v + "px";
+              switch (pre) {
+                  case "p":
+                      return isn ? {
+                          styles: {
+                              padding: px(nv)
+                          }
+                      } : null;
+                  case "pt":
+                      return isn ? {
+                          styles: {
+                              paddingTop: px(nv)
+                          }
+                      } : null;
+                  case "pb":
+                      return isn ? {
+                          styles: {
+                              paddingBottom: px(nv)
+                          }
+                      } : null;
+                  case "pl":
+                      return isn ? {
+                          styles: {
+                              paddingLeft: px(nv)
+                          }
+                      } : null;
+                  case "pr":
+                      return isn ? {
+                          styles: {
+                              paddingRight: px(nv)
+                          }
+                      } : null;
+                  case "px":
+                      return isn ? {
+                          styles: {
+                              paddingLeft: px(nv),
+                              paddingRight: px(nv)
+                          }
+                      } : null;
+                  case "py":
+                      return isn ? {
+                          styles: {
+                              paddingTop: px(nv),
+                              paddingBottom: px(nv)
+                          }
+                      } : null;
+                  case "m":
+                      return isn ? {
+                          styles: {
+                              margin: px(nv)
+                          }
+                      } : null;
+                  case "mt":
+                      return isn ? {
+                          styles: {
+                              marginTop: px(nv)
+                          }
+                      } : null;
+                  case "mb":
+                      return isn ? {
+                          styles: {
+                              marginBottom: px(nv)
+                          }
+                      } : null;
+                  case "ml":
+                      return isn ? {
+                          styles: {
+                              marginLeft: px(nv)
+                          }
+                      } : null;
+                  case "mr":
+                      return isn ? {
+                          styles: {
+                              marginRight: px(nv)
+                          }
+                      } : null;
+                  case "mx":
+                      return isn ? {
+                          styles: {
+                              marginLeft: px(nv),
+                              marginRight: px(nv)
+                          }
+                      } : null;
+                  case "my":
+                      return isn ? {
+                          styles: {
+                              marginTop: px(nv),
+                              marginBottom: px(nv)
+                          }
+                      } : null;
+                  case "gap":
+                      return isn ? {
+                          styles: {
+                              gap: px(nv)
+                          }
+                      } : null;
+                  case "w":
+                      if (isn) return {
+                          styles: {
+                              width: px(nv)
+                          }
+                      };
+                      if (suf === "half") return {
+                          styles: {
+                              width: "50%"
+                          }
+                      };
+                      return null;
+                  case "h":
+                      if (isn) return {
+                          styles: {
+                              height: px(nv)
+                          }
+                      };
+                      if (suf === "half") return {
+                          styles: {
+                              height: "50%"
+                          }
+                      };
+                      return null;
+                  case "min-w":
+                      return isn ? {
+                          styles: {
+                              minWidth: px(nv)
+                          }
+                      } : null;
+                  case "max-w":
+                      return isn ? {
+                          styles: {
+                              maxWidth: px(nv)
+                          }
+                      } : null;
+                  case "min-h":
+                      return isn ? {
+                          styles: {
+                              minHeight: px(nv)
+                          }
+                      } : null;
+                  case "max-h":
+                      return isn ? {
+                          styles: {
+                              maxHeight: px(nv)
+                          }
+                      } : null;
+                  case "z":
+                      return isn ? {
+                          styles: {
+                              zIndex: String(nv)
+                          }
+                      } : null;
+                  case "top":
+                      return isn ? {
+                          styles: {
+                              top: px(nv)
+                          }
+                      } : null;
+                  case "right":
+                      return isn ? {
+                          styles: {
+                              right: px(nv)
+                          }
+                      } : null;
+                  case "bottom":
+                      return isn ? {
+                          styles: {
+                              bottom: px(nv)
+                          }
+                      } : null;
+                  case "left":
+                      return isn ? {
+                          styles: {
+                              left: px(nv)
+                          }
+                      } : null;
+                  case "cols":
+                      return isn ? {
+                          styles: {
+                              gridTemplateColumns: `repeat(${nv},1fr)`
+                          }
+                      } : null;
+                  case "rounded":
+                      if (suf === "full") return {
+                          styles: {
+                              borderRadius: "9999px"
+                          }
+                      };
+                      if (suf === "none") return {
+                          styles: {
+                              borderRadius: "0"
+                          }
+                      };
+                      return isn ? {
+                          styles: {
+                              borderRadius: px(nv)
+                          }
+                      } : null;
+                  case "text":
+                      if (isn) return {
+                          styles: {
+                              fontSize: px(nv)
+                          }
+                      };
+                      if (th.colors[suf]) return {
+                          styles: {
+                              color: th.colors[suf]
+                          }
+                      };
+                      return null;
+                  case "bg":
+                      if (th.colors[suf]) return {
+                          styles: {
+                              backgroundColor: th.colors[suf]
+                          }
+                      };
+                      return {
+                          styles: {
+                              backgroundColor: suf
+                          }
+                      };
+                  case "border":
+                      if (th.colors[suf]) return {
+                          styles: {
+                              borderColor: th.colors[suf]
+                          }
+                      };
+                      if (isn) return {
+                          styles: {
+                              borderWidth: px(nv),
+                              borderStyle: "solid"
+                          }
+                      };
+                      return null;
+                  case "shadow":
+                      if (th.shadows[suf]) return {
+                          styles: {
+                              boxShadow: th.shadows[suf]
+                          }
+                      };
+                      return null;
+                  case "font":
+                      if (th.fonts[suf]) return {
+                          styles: {
+                              fontFamily: th.fonts[suf]
+                          }
+                      };
+                      return null;
+                  case "leading":
+                      if (th.leading[suf]) return {
+                          styles: {
+                              lineHeight: th.leading[suf]
+                          }
+                      };
+                      if (isn) return {
+                          styles: {
+                              lineHeight: String(nv)
+                          }
+                      };
+                      return null;
+                  case "tracking":
+                      if (th.tracking[suf]) return {
+                          styles: {
+                              letterSpacing: th.tracking[suf]
+                          }
+                      };
+                      return null;
+                  case "opacity":
+                      if (th.opacity[suf] !== undefined) return {
+                          styles: {
+                              opacity: th.opacity[suf]
+                          }
+                      };
+                      if (isn) return {
+                          styles: {
+                              opacity: String(nv / 100)
+                          }
+                      };
+                      return null;
+                  default:
+                      return null;
+              }
+          }
+          const pe = new WeakSet();
+          const hm2 = new WeakMap();
+          const rl = [];
+          const BPS = {};
+          ["480px", "768px", "1024px", "1280px"].forEach(bp => {
+              if (typeof window !== "undefined" && window.matchMedia) BPS[bp] = window.matchMedia(`(min-width: ${bp})`);
+          });
+
+          function applyStyles(el, styles) {
+              Object.assign(el.style, styles);
+          }
+
+          function attachHover(el, hs) {
+              const orig = {};
+              Object.keys(hs).forEach(p => {
+                  orig[p] = el.style[p] || "";
+              });
+              const prev = hm2.get(el);
+              if (prev) {
+                  el.removeEventListener("mouseenter", prev.e);
+                  el.removeEventListener("mouseleave", prev.l);
+              }
+              const e = () => applyStyles(el, hs);
+              const l = () => applyStyles(el, orig);
+              el.addEventListener("mouseenter", e);
+              el.addEventListener("mouseleave", l);
+              hm2.set(el, {
+                  e,
+                  l
+              });
+          }
+
+          function attachResp(el, bp, styles) {
+              const mql = BPS[bp];
+              if (!mql) return;
+              const orig = {};
+              Object.keys(styles).forEach(p => {
+                  orig[p] = el.style[p] || "";
+              });
+              const h = ev => applyStyles(el, ev.matches ? styles : orig);
+              if (mql.matches) applyStyles(el, styles);
+              mql.addEventListener("change", h);
+              rl.push({
+                  mql,
+                  handler: h
+              });
+          }
+
+          function processEl(el) {
+              const kcs = Array.from(el.classList).filter(c => c.startsWith("kc-"));
+              if (!kcs.length) return;
+              const fp = [...kcs].sort().join("|");
+              if (el.__kcFP === fp) return;
+              el.__kcFP = fp;
+              pe.add(el);
+              const ah = {};
+              kcs.forEach(cls => {
+                  const r = parseClass(cls, theme, su);
+                  if (!r) {
+                      if (KadakCSS.debug) console.warn(`[KadakCSS] Unknown: "${cls}"`);
+                      return;
+                  }
+                  if (r.styles) applyStyles(el, r.styles);
+                  if (r.hover) Object.assign(ah, r.hover);
+                  if (r.responsive) attachResp(el, r.responsive.breakpoint, r.responsive.styles);
+              });
+              if (Object.keys(ah).length) attachHover(el, ah);
+          }
+
+          function scan(root) {
+              const els = (root === document) ? document.querySelectorAll("*") : root.querySelectorAll ? [root, ...root.querySelectorAll("*")] : [root];
+              els.forEach(el => {
+                  if (el.classList?.length) processEl(el);
+              });
+          }
+          let obs = null;
+
+          function startObs() {
+              if (obs) return;
+              obs = new MutationObserver(muts => {
+                  muts.forEach(m => {
+                      if (m.type === "childList") m.addedNodes.forEach(n => {
+                          if (n.nodeType === 1) scan(n);
+                      });
+                      if (m.type === "attributes" && m.attributeName === "class") {
+                          m.target.__kcFP = null;
+                          processEl(m.target);
+                      }
+                  });
+              });
+              obs.observe(document.body, {
+                  childList: true,
+                  subtree: true,
+                  attributes: true,
+                  attributeFilter: ["class"]
+              });
+          }
+          const KadakCSS = {
+              version: "1.0.0",
+              debug: false,
+              theme,
+              staticUtilities: su,
+              init() {
+                  console.log("%c⚡ KadakCSS v1.0.0 ready", "color:#c69c6d;font-weight:bold;font-size:14px;");
+                  scan(document);
+                  startObs();
+                  return this;
+              },
+              refresh() {
+                  document.querySelectorAll("*").forEach(el => {
+                      el.__kcFP = null;
+                  });
+                  scan(document);
+                  return this;
+              },
+              destroy() {
+                  if (obs) {
+                      obs.disconnect();
+                      obs = null;
+                  }
+                  rl.forEach(({
+                      mql,
+                      handler
+                  }) => mql.removeEventListener("change", handler));
+                  rl.length = 0;
+                  return this;
+              },
+              addUtility(cls, styles) {
+                  if (!cls.startsWith("kc-")) {
+                      console.warn(`[KadakCSS] Must start with "kc-"`);
+                      return this;
+                  }
+                  su[cls] = styles;
+                  return this;
+              },
+              addColor(n, v) {
+                  theme.colors[n] = v;
+                  return this;
+              },
+              addShadow(n, v) {
+                  theme.shadows[n] = v;
+                  return this;
+              }
+          };
+          if (typeof document !== "undefined") {
+              if (document.readyState === "loading") {
+                  document.addEventListener("DOMContentLoaded", () => KadakCSS.init());
+              } else {
+                  KadakCSS.init();
+              }
+          }
+          g.KadakCSS = KadakCSS;
+      })(typeof window !== "undefined" ? window : global); 
+    </script>
+
+
+  <script>
+    const input = document.getElementById("playground-input");
+    const textIn = document.getElementById("playground-text");
+    const preview = document.getElementById("preview-el");
+    const styleOut = document.getElementById("style-output");
+
+    const quickClasses = [
+      "kc-rounded-full", "kc-shadow-chai", "kc-font-bold",
+      "kc-text-24", "kc-italic", "kc-uppercase", "kc-tracking-wide",
+      "kc-hover:bg-kadak", "kc-transition", "kc-border-4",
+    ];
+
+    const chips = document.getElementById("chips");
+    quickClasses.forEach(cls => {
+      const btn = document.createElement("button");
+      btn.textContent = cls;
+      btn.style.cssText = "background:#1a1410;border:1px solid #3a2d1e;border-radius:6px;padding:4px 10px;font-size:11px;color:#c69c6d;cursor:pointer;font-family:'Courier New',monospace;transition:all 0.15s;";
+      btn.onmouseenter = () => btn.style.borderColor = "#c69c6d";
+      btn.onmouseleave = () => btn.style.borderColor = "#3a2d1e";
+      btn.onclick = () => {
+        const cur = input.value.trim();
+        input.value = cur ? cur + " " + cls : cls;
+        updatePreview();
+      };
+      chips.appendChild(btn);
+    });
+
+    function updatePreview() {
+      preview.removeAttribute("style");
+      preview.className = "";
+      preview.__kcFP = null;
+
+      const classes = input.value.trim().split(/\s+/).filter(Boolean);
+      const text = textIn.value || "KadakCSS ☕";
+
+      preview.textContent = text;
+      preview.className = classes.join(" ");
+
+      KadakCSS.refresh();
+
+      const styles = preview.style.cssText;
+      styleOut.textContent = styles
+        ? styles.split(";").filter(s => s.trim()).map(s => "  " + s.trim() + ";").join("\n")
+        : "(no kc-* classes applied yet)";
+    }
+
+    input.addEventListener("input", updatePreview);
+    textIn.addEventListener("input", updatePreview);
+
+    setTimeout(updatePreview, 100);
+
+    function copySnippet() {
+      navigator.clipboard.writeText('<script src="kadakcss.js"><\/script>').then(() => {
+        const btn = document.getElementById("copy-btn");
+        btn.textContent = "Copied!";
+        btn.style.color = "#22c55e";
+        setTimeout(() => { btn.textContent = "Copy"; btn.style.color = "#6b7280"; }, 1500);
+      });
+    }
+  </script>
+
+</body>
+
+</html>

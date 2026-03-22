@@ -1,0 +1,10 @@
+{
+    "name": "kadakcss",
+    "version": "1.0.0",
+    "description": "Utility-first CSS engine in pure JS",
+    "main": "kadakcss.js",
+    "files": ["kadakcss.js", "kadakcss.min.js"],
+    "keywords": ["css", "tailwind", "utility", "javascript"],
+    "author": "Purakhnath Jyani",
+    "license": "MIT"
+} 
